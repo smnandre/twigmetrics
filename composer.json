@@ -1,6 +1,6 @@
 {
     "name": "smnandre/twigmetrics",
-    "description": "A CLI tool to analyze Twig templates and provide insights",
+    "description": "Twig template analyzer for PHP: structure, style, complexity, and maintainability metrics at a glance",
     "license": "MIT",
     "type": "project",
     "keywords": [
@@ -13,8 +13,8 @@
         "lines-of-code",
         "cli",
         "console-application",
-        "alto",
-        "alto-php"
+        "complexity",
+        "code-style",
     ],
     "authors": [
         {
