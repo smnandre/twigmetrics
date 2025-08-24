@@ -17,7 +17,7 @@ foreach ($possibleFiles as $possibleFile) {
 }
 
 if (null === $file) {
-    throw new RuntimeException('Unable to locate autoload.php file.');
+    throw new \RuntimeException('Unable to locate autoload.php file.');
 }
 
 require_once $file;
