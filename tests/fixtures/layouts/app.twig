@@ -1,0 +1,11 @@
+{% extends 'base.twig' %}
+{% block body %}
+  {{ parent() }}
+  <footer>
+    {% if show_social %}
+      {% for network in social_networks %}
+        <a href="{{ network.url }}">{{ network.name }}</a>
+      {% endfor %}
+    {% endif %}
+  </footer>
+{% endblock %}

@@ -1,0 +1,58 @@
+{
+    "name": "smnandre/twigmetrics",
+    "description": "A CLI tool to analyze Twig templates and provide insights",
+    "license": "MIT",
+    "type": "project",
+    "keywords": [
+        "twig",
+        "template",
+        "metrics",
+        "loc",
+        "code-quality",
+        "static-analysis",
+        "lines-of-code",
+        "cli",
+        "console-application",
+        "alto",
+        "alto-php"
+    ],
+    "authors": [
+        {
+            "name": "Simon André",
+            "email": "smn.andre@gmail.com",
+            "homepage": "https://github.com/smnandre"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "symfony/console": "^7.3 || ^8.0",
+        "symfony/finder": "^7.3 || ^8.0",
+        "twig/twig": "^3.21"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.85",
+        "phpstan/phpstan": "^2.1.22",
+        "phpunit/phpunit": "^12.3",
+        "rector/rector": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "TwigMetrics\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TwigMetrics\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/twigmetrics"
+    ],
+    "scripts": {
+        "analyze": "vendor/bin/phpstan analyze",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "vendor/bin/php-cs-fixer fix --allow-risky=yes--diff",
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-text --coverage-xml=./coverage.xml"
+    }
+}

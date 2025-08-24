@@ -1,0 +1,7 @@
+/.git*                      export-ignore
+/docs/                      export-ignore
+/tests/                     export-ignore
+/.php-cs-fixer.dist.php     export-ignore
+/CHANGELOG.md               export-ignore
+/phpstan.dist.neon          export-ignore
+/phpunit.dist.xml           export-ignore

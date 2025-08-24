@@ -1,0 +1,12 @@
+FOO
+
+
+{% if foo|default %}
+    {{ foo }}
+    {% if foo|default %}
+        {{ foo }}
+        {% if foo|default %}
+            {{ foo }}
+        {% endif %}
+    {% endif %}
+{% endif %}

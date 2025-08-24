@@ -1,0 +1,11 @@
+{% extends 'base.twig' %}
+{% block content %}
+  {% if user %}
+    <h1>Welcome {{ user.name }}</h1>
+    {% for item in items %}
+      {% if item.active %}
+        {{ item.title }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}

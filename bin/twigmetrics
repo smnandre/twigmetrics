@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Symfony\Component\Console\Application;
+use TwigMetrics\Command\AnalyzeCommand;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$application = new Application('Twig Metrics');
+$application->add($command = new AnalyzeCommand());
+$application->setDefaultCommand($command->getName(), true);
+$application->run();

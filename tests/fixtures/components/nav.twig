@@ -1,0 +1,6 @@
+{% include 'components/header.twig' %}
+<nav>
+  {% for item in menu %}
+    <a href="{{ path(item.route) }}">{{ item.label|trans }}</a>
+  {% endfor %}
+</nav>

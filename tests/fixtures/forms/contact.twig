@@ -1,0 +1,13 @@
+{% macro input(name, value, type = 'text') %}
+  <input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+{% endmacro %}
+
+<form method="post">
+  {{ _self.input('name', user.name) }}
+  {{ _self.input('email', user.email, 'email') }}
+  {% if form.errors %}
+    {% for error in form.errors %}
+      <div class="error">{{ error }}</div>
+    {% endfor %}
+  {% endif %}
+</form>

@@ -1,0 +1,14 @@
+{% extends 'base.twig' %}
+{% block content %}
+  <h1>About</h1>
+  {{ include('components/header.twig') }}
+  {% if section == 'team' %}
+    {% for member in team %}
+      <div>{{ member.name }}</div>
+    {% endfor %}
+  {% elseif section == 'history' %}
+    <p>{{ history|raw }}</p>
+  {% else %}
+    <p>{{ description|escape }}</p>
+  {% endif %}
+{% endblock %}
