@@ -82,7 +82,7 @@ composer install
 To analyze a directory of Twig templates, run:
 
 ```
-bin/twigmetrics path/to/templates
+vendor/bin/twigmetrics path/to/templates
 ```
 
 ## Twig Metrics
