@@ -14,7 +14,7 @@
         "cli",
         "console-application",
         "complexity",
-        "code-style",
+        "code-style"
     ],
     "authors": [
         {
