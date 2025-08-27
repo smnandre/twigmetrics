@@ -46,11 +46,11 @@ $ bin/twigmetrics analyze templates/
 
 
   ╭─ Template Files ─────╮  ╭─ Logical Comp... ────╮  ╭─ Twig Callables ─────╮
-  │  ● ● ● ● ○ ○      C  │  │  ● ● ● ● ● ●      A+ │  │  ● ● ● ● ● ●      A+ │
+  │  ● ● ● ● ○ ○      C  │  │  ● ● ● ● ● ○      B  │  │  ● ● ● ● ● ○      B  │
   ╰──────────────────────╯  ╰──────────────────────╯  ╰──────────────────────╯
 
   ╭─ Code Style ─────────╮  ╭─ Architecture ───────╮  ╭─ Maintainability ────╮
-  │  ● ● ● ● ● ●      A+ │  │  ● ● ● ● ○ ○      C  │  │  ● ● ● ● ● ●      A+ │
+  │  ● ● ● ● ● ○      C  │  │  ● ● ● ● ● ○      B  │  │  ● ● ● ● ● ●      A+ │
   ╰──────────────────────╯  ╰──────────────────────╯  ╰──────────────────────╯
 ```
 
@@ -92,10 +92,10 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Template Files ───────────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Templates ................. 188       Directories ................ 19      │
-  │ Total Lines ............ 11,204       Avg Lines/Template ....... 59.6      │
-  │ Characters ............. 503.8k       Chars/Template .......... 2,680      │
-  │ Dir Depth Avg ............. 1.6       File Size CV % .......... 76.3%      │
+  │   Total Templates ........... 188      Total Lines .............. 11,213   │
+  │   Average Lines/File ....... 59.6      Median Lines ................. 48   │
+  │   Size Coefficient (CV) .... 0.77      Gini Index ................ 0.380   │
+  │   Directories ................ 19      Characters ............... 503.8k   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -105,10 +105,9 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Logical Complexity ───────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Avg Complexity ............ 8.3       Max Complexity ............. 79      │
-  │ Avg Depth ................. 1.2       Max Depth ................... 6      │
-  │ IFs/Template .............. 1.3       FORs/Template ............. 0.6      │
-  │ Nested Control Depth ........ 6                                            │
+  │   Avg Complexity ............. 8.3      Max Complexity .............. 79   │
+  │   Avg Depth .................. 1.2      Max Depth .................... 6   │
+  │   IFs/Template ............... 1.3      FORs/Template .............. 0.6   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -118,9 +117,9 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Twig Callables ───────────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Funcs/Template ............ 2.9       Filters/Template ......... 18.9      │
-  │ Vars/Template ............ 13.5       Unique Funcs ............... 23      │
-  │ Unique Filters ............. 31       Macros Defined .............. 5      │
+  │   Total Calls ............. 4,632      Unique Functions ............. 23   │
+  │   Unique Filters ............. 32      Unique Tests .................. 7   │
+  │   Funcs/Template ............ 2.9      Filters/Template ........... 18.9   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -130,10 +129,10 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Code Style ───────────────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Avg Line Length .......... 41.0       Comments/Template ......... 0.6      │
-  │ Comment Ratio ............ 1.0%       Trail Spaces/Line ........ 0.00      │
-  │ Empty Lines % ............ 8.2%       Formatting Score ......... 92.7      │
-  │ Indent Consistency % ... 100.0%       Naming Conv. Score % .... 97.5%      │
+  │   Avg Line Length ........... 41.0      Max Line Length ............ 217   │
+  │   Indent Consistency ...... 100.0%      P95 Length ................. 217   │
+  │   Consistency Score ........ 92.7%      Style Violations ........... 128   │
+  │   Comments/Template .......... 0.6      Mixed Indentation ............ 0   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -143,9 +142,9 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Architecture ─────────────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Extends/Template ......... 0.22       Includes/Template ........ 0.57      │
-  │ Embeds/Template .......... 0.04       Imports/Template ......... 0.00      │
-  │ Avg Inherit Depth ......... 0.2       Standalone Files .......... 122      │
+  │   Imports/Template ......... 0.00      Extends/Template ........... 0.22   │
+  │   Avg Inherit Depth ......... 0.2      Includes/Template .......... 0.57   │
+  │   Embeds/Template .......... 0.04      Blocks/Template ............ 1.13   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -155,9 +154,9 @@ vendor/bin/twigmetrics path/to/templates
 ```
   ╭─ Maintainability ──────────────────────────────────────────────────────────╮
   │                                                                            │
-  │ Large Templates (>200L) ..... 4       High Complexity (>20) ...... 17      │
-  │ Deep Nesting (>5) ........... 1       Empty Templates ............. 0      │
-  │ Standalone ................ 122       Risk Score .................. A      │
+  │   Empty Lines Ratio ....... 10.0%      MI Average ................ 107.2   │
+  │   MI Median ............... 106.7      Comment Density ............ 1.3%   │
+  │   High Risk ................... 3      Medium Risk .................. 40   │
   │                                                                            │
   ╰────────────────────────────────────────────────────────────────────────────╯
 ```

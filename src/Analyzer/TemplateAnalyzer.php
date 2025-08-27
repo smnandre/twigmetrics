@@ -80,11 +80,11 @@ final readonly class TemplateAnalyzer
         }
 
         $allMetrics = array_merge($astMetrics, $sourceMetrics);
-        $enhancedMetrics = $this->enhanceMetrics($allMetrics, $file);
+        $derivedMetrics = $this->computeDerivedMetrics($allMetrics, $file);
 
         $analysisTime = microtime(true) - $startTime;
 
-        return new AnalysisResult($file, $enhancedMetrics, $analysisTime);
+        return new AnalysisResult($file, $derivedMetrics, $analysisTime);
     }
 
     private function setCollectorContext(\SplFileInfo $file): void
@@ -117,7 +117,7 @@ final readonly class TemplateAnalyzer
      *
      * @return array<string, mixed>
      */
-    private function enhanceMetrics(array $metrics, \SplFileInfo $file): array
+    private function computeDerivedMetrics(array $metrics, \SplFileInfo $file): array
     {
         $lines = $metrics['lines'] ?? 0;
         $complexity = $metrics['complexity_score'] ?? 0;

@@ -60,11 +60,11 @@ final readonly class BatchAnalyzer
 
         $dependencyGraph = $this->buildDependencyGraph($results);
 
-        $enhancedResults = $this->enhanceWithCrossTemplateInsights($results, $dependencyGraph);
+        $augmentedResults = $this->addCrossTemplateInsights($results, $dependencyGraph);
 
         $totalTime = microtime(true) - $startTime;
 
-        return new BatchAnalysisResult($enhancedResults, $dependencyGraph, $totalTime, $errors);
+        return new BatchAnalysisResult($augmentedResults, $dependencyGraph, $totalTime, $errors);
     }
 
     /**
@@ -95,13 +95,13 @@ final readonly class BatchAnalyzer
      *
      * @return AnalysisResult[]
      */
-    private function enhanceWithCrossTemplateInsights(array $results, array $dependencyGraph): array
+    private function addCrossTemplateInsights(array $results, array $dependencyGraph): array
     {
         $referenceCounter = $this->calculateReferenceFrequency($dependencyGraph);
         $this->analyzeBlockUsage($results);
         $architecturalRoles = $this->determineArchitecturalRoles($results, $referenceCounter);
 
-        $enhancedResults = [];
+        $augmented = [];
         foreach ($results as $result) {
             $templatePath = $result->getRelativePath();
             $metrics = $result->getData();
@@ -114,10 +114,10 @@ final readonly class BatchAnalyzer
 
             $metrics['potential_issues'] = $this->identifyPotentialIssues($metrics);
 
-            $enhancedResults[] = new AnalysisResult($result->file, $metrics, $result->analysisTime);
+            $augmented[] = new AnalysisResult($result->file, $metrics, $result->analysisTime);
         }
 
-        return $enhancedResults;
+        return $augmented;
     }
 
     /**

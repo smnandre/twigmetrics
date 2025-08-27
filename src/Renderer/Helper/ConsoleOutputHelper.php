@@ -26,7 +26,7 @@ final readonly class ConsoleOutputHelper
 
     public function writeMainHeader(): void
     {
-        $borderInside = 76;
+        $borderInside = 74;
         $text = 'T W I G   🌿   M E T R I C S';
         $reserved = 3;
         $contentWidth = max(0, $borderInside - 2 * $reserved);
@@ -35,9 +35,9 @@ final readonly class ConsoleOutputHelper
         $right = ($pad - (int) floor($pad / 2)) + $reserved;
         $centered = str_repeat(' ', $left).$text.str_repeat(' ', $right);
 
-        $top = ' '.sprintf('<fg=#ddd>╭%s╮</>', str_repeat('─', $borderInside)).' ';
-        $middle = ' '.sprintf('<fg=#ddd>│</>%s<fg=#ddd>│</>', $centered).' ';
-        $bottom = ' '.sprintf('<fg=#ddd>╰%s╯</>', str_repeat('─', $borderInside)).' ';
+        $top = '  '.sprintf('<fg=#ddd>╭%s╮</>', str_repeat('─', $borderInside)).'  ';
+        $middle = '  '.sprintf('<fg=#ddd>│</>%s<fg=#ddd>│</>', $centered).'  ';
+        $bottom = '  '.sprintf('<fg=#ddd>╰%s╯</>', str_repeat('─', $borderInside)).'  ';
 
         $this->output->writeln($top);
         $this->output->writeln($middle);
@@ -56,36 +56,21 @@ final readonly class ConsoleOutputHelper
         $this->output->writeln('  <fg=gray>|</fg=gray>              <fg=#999>TwigMetrics is </fg=#999><fg=#f1c40f>in development</fg=#f1c40f><fg=#999>. Use with caution.</fg=#999>           <fg=gray>|</fg=gray>');
         $this->output->writeln('  <fg=gray>|</fg=gray>                                                                         <fg=gray>|</fg=gray>');
         $this->output->writeln('  <fg=gray>|</fg=gray>   <fg=yellow>⭑</fg=yellow> <fg=#999>Report issue / feedback</fg=#999>               <fg=#999>Support the development</fg=#999>  <fg=green>♥</fg=green>    <fg=gray>|</fg=gray>');
-        $this->output->writeln('  <fg=gray>|</fg=gray>   <fg=#999>github.com/smnandre/twig-metrics</fg=#999>        <fg=#999>github.com/sponsor/smnandre</fg=#999>   <fg=gray>|</fg=gray>');
+        $this->output->writeln('  <fg=gray>|</fg=gray>   <fg=#999>github.com/smnandre/twigmetrics</fg=#999>        <fg=#999>github.com/sponsor/smnandre</fg=#999>   <fg=gray>|</fg=gray>');
         $this->output->writeln('  <fg=gray>|</fg=gray>                                                                         <fg=gray>|</fg=gray>');
         $this->output->writeln('  <fg=yellow>⚠</fg=yellow> <fg=gray>- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</fg=gray> <fg=yellow>⚠</fg=yellow>');
     }
 
     public function writeSeparatorLine(): void
     {
-        $this->output->writeln('<fg=#999>───────────────────────────────────────────────────────────────────────────────</>');
+        $this->output->writeln('  <fg=#999>───────────────────────────────────────────────────────────────────────────</>  ');
         $this->output->writeln('');
     }
 
     public function writeSection(string $title): void
     {
         $this->output->writeln('');
-        $this->output->writeln(" <fg=yellow;options=bold>{$title}</fg=yellow;options=bold>");
-        $this->output->writeln('');
-    }
-
-    public function writeDimensionSection(string $title, int $number): void
-    {
-        $this->output->writeln('');
-        $this->output->writeln('');
-
-        $prefix = "── {$number}. ".strtoupper($title).'  ';
-        $totalWidth = 79;
-        $remainingWidth = $totalWidth - mb_strlen($prefix);
-        $suffix = str_repeat('─', max(0, $remainingWidth));
-
-        $this->output->writeln($prefix.$suffix);
-        $this->output->writeln('');
+        $this->output->writeln("  <fg=yellow;options=bold>{$title}</fg=yellow;options=bold>  ");
         $this->output->writeln('');
     }
 
@@ -100,7 +85,7 @@ final readonly class ConsoleOutputHelper
             $title = sprintf('<fg=yellow>%s.</> %s', $number, $title);
         }
 
-        $prefix = \sprintf(' <fg=#90EE90>━━━</> %s  ', $title);
+        $prefix = \sprintf('  <fg=#90EE90>━━━</> %s  ', $title);
         $totalWidth = 78;
         $remainingWidth = $totalWidth - mb_strlen(strip_tags($prefix));
         $suffix = str_repeat('━', max(0, $remainingWidth));
@@ -224,5 +209,49 @@ final readonly class ConsoleOutputHelper
         }
 
         $this->output->writeln('');
+    }
+
+    public function color(string $text, string $fg, ?string $options = null): string
+    {
+        $opt = $options ? ";options={$options}" : '';
+
+        return sprintf('<fg=%s%s>%s</>', $fg, $opt, $text);
+    }
+
+    public function gray(string $text): string
+    {
+        return $this->color($text, '#cccccc');
+    }
+
+    public function white(string $text, bool $bold = false): string
+    {
+        return $this->color($text, '#ffffff', $bold ? 'bold' : null);
+    }
+
+    public function gradeColor(string $grade): string
+    {
+        $map = [
+            'A+' => 'green', 'A' => 'green',
+            'B' => 'cyan',
+            'C+' => 'yellow', 'C' => 'yellow',
+            'D' => 'red', 'E' => 'red',
+        ];
+        $fg = $map[$grade] ?? 'red';
+        $opts = in_array($grade, ['A+', 'A'], true) ? 'bold' : null;
+
+        return $this->color($grade, $fg, $opts);
+    }
+
+    public function riskLabel(string $risk): string
+    {
+        $label = strtoupper($risk);
+
+        return match ($risk) {
+            'low' => $this->color($label, 'green'),
+            'moderate', 'medium' => $this->color($label, 'yellow'),
+            'high' => $this->color($label, 'red'),
+            'critical' => $this->color($label, 'red', 'bold'),
+            default => $this->gray($label),
+        };
     }
 }

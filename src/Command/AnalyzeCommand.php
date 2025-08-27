@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +22,6 @@ use TwigMetrics\Collector\ControlFlowCollector;
 use TwigMetrics\Collector\FunctionCollector;
 use TwigMetrics\Collector\InheritanceCollector;
 use TwigMetrics\Collector\RelationshipCollector;
-use TwigMetrics\Config\ErrorMessages;
 use TwigMetrics\Renderer\ConsoleRenderer;
 use TwigMetrics\Renderer\Helper\ConsoleOutputHelper;
 use TwigMetrics\Reporter\Dimension\ArchitectureReporter;
@@ -51,35 +51,32 @@ final class AnalyzeCommand extends Command
         $this
             ->addArgument('target', InputArgument::OPTIONAL, 'Dimension or path to analyze (default: current directory)', '.')
             ->addArgument('path', InputArgument::OPTIONAL, 'Path to analyze when first argument is a dimension')
-            ->setHelp(
-                <<<'HELP'
-                TwigMetrics analyzes Twig templates with a simple, intuitive CLI interface.
+            ->addOption('dir-depth', 'd', InputOption::VALUE_REQUIRED, 'Directory charts max depth (0 to disable)', '1')
+            ->setHelp(<<<'HELP'
+TwigMetrics analyzes Twig templates with a simple, intuitive CLI interface.
 
-                <info>Simple Usage:</info>
-                  <info>twigmetrics</info>                          # Default analysis of current directory
-                  <info>twigmetrics templates/</info>               # Analyze templates/ directory  
-                  <info>twigmetrics complexity</info>               # Complexity analysis on current directory
-                  <info>twigmetrics complexity templates/</info>    # Complexity analysis on templates/
-                  <info>twigmetrics code-style src/</info>          # Code style analysis on src/
+    <info>twigmetrics</info>                          Analyze current directory
+    <info>twigmetrics templates/</info>               Analyze templates/ directory
+                                                    
+Template size, structure, and distribution
+    <info>twigmetrics <comment>template-files</comment> templates/</info>
 
-                <info>Available Dimensions:</info>
-                  <info>template-files</info>    - Template size, structure, and distribution
-                  <info>complexity</info>        - Logical complexity and nesting analysis
-                  <info>callables</info>         - Twig functions, filters, macros, variables
-                  <info>code-style</info>        - Formatting and naming conventions
-                  <info>architecture</info>      - Template roles and reusability patterns
-                  <info>maintainability</info>   - Code quality, duplication, tech debt
+Logical complexity and nesting analysis  
+    <info>twigmetrics <comment>complexity</comment> templates/</info>
 
-                <info>Usage Examples:</info>
-                  <comment># Quick analysis</comment>
-                  <info>twigmetrics</info>                          # Default analysis
-                  <info>twigmetrics templates/</info>               # Analyze specific directory
-                  
-                  <comment># Focused reports</comment>
-                  <info>twigmetrics complexity</info>               # Complexity analysis
-                  <info>twigmetrics code-style templates/</info>    # Code style for templates/
-                  
-                HELP
+Twig functions, filters, macros, variables
+    <info>twigmetrics <comment>callables</comment> templates/</info>
+
+Formatting & code style conventions
+    <info>twigmetrics <comment>code-style</comment> templates/</info>
+
+Inclusion and inheritance relationships
+    <info>twigmetrics <comment>architecture</comment> templates/</info>
+    
+Code quality, duplication, tech debt
+    <info>twigmetrics <comment>maintainability</comment> templates/</info>
+
+HELP
             );
     }
 
@@ -92,46 +89,36 @@ final class AnalyzeCommand extends Command
         [$path, $reportType, $dimension] = $this->parseArguments($target, $pathArg);
 
         if (!is_dir($path)) {
-            $io->error(sprintf(ErrorMessages::DIRECTORY_NOT_FOUND, $path));
+            $io->error(sprintf('Directory not found "%s".', $path));
 
             return Command::FAILURE;
         }
 
         $validDimensions = [
-            'template-files', 'complexity', /* 'relationships', */ 'callables',
+            'template-files', 'complexity', 'callables',
             'code-style', 'architecture', 'maintainability',
         ];
 
         if ($dimension && !in_array($dimension, $validDimensions, true)) {
-            $io->error(sprintf(ErrorMessages::INVALID_DIMENSION, implode(', ', $validDimensions)));
+            $io->error(sprintf('Invalid dimension. Use: %s', implode(', ', $validDimensions)));
 
             return Command::FAILURE;
         }
 
-        /** @var ConsoleSectionOutput|null $topSection */
-        $topSection = null;
         $headerHelper = new ConsoleOutputHelper($output);
         $headerHelper->writeMainHeader();
         $headerHelper->writeEmptyLine();
         $headerHelper->writeBetaWarning();
 
-        if ($output instanceof ConsoleOutputInterface) {
-            $topSection = $output->section();
-            $lines = [
-                " <info>Path:</info> {$path} ",
-            ];
-            if ($dimension) {
-                $lines[] = " <info>Dimension:</info> {$dimension} ";
-            }
-            $topSection->writeln($lines);
-            $topSection->writeln('');
-        } else {
-            $output->writeln(" <info>Path:</info> {$path} ");
-            if ($dimension) {
-                $output->writeln(" <info>Dimension:</info> {$dimension} ");
-            }
-            $output->writeln('');
+        $topSection = $this->createSectionOutput($output);
+        $lines = [
+            " <info>Path:</info> {$path} ",
+        ];
+        if ($dimension) {
+            $lines[] = " <info>Dimension:</info> {$dimension} ";
         }
+        $topSection->writeln($lines);
+        $topSection->writeln('');
 
         $startTime = microtime(true);
 
@@ -139,26 +126,16 @@ final class AnalyzeCommand extends Command
         $files = iterator_to_array($templateFinder->find($path));
 
         if (empty($files)) {
-            $io->error(sprintf(ErrorMessages::NO_TEMPLATES_FOUND, $path));
+            $io->error(sprintf('No Twig templates found in: %s', $path));
 
             return Command::FAILURE;
         }
 
-        $templatesFoundLine = ErrorMessages::consoleInfo(sprintf(ErrorMessages::TEMPLATES_FOUND, count($files)));
-        if ($topSection instanceof ConsoleSectionOutput) {
-            $topSection->writeln(' '.$templatesFoundLine.' ');
-        } else {
-            $output->writeln(' '.$templatesFoundLine.' ');
-        }
+        $templatesFoundLine = sprintf('Found %d template(s) to analyze...', count($files));
+        $topSection->writeln(' <info>'.$templatesFoundLine.'</info> ');
 
-        /** @var ConsoleSectionOutput|null $progressSection */
-        $progressSection = null;
-        $progressOutput = $output;
-        if ($output instanceof ConsoleOutputInterface) {
-            $progressSection = $output->section();
-            $progressOutput = $progressSection;
-        }
-        $progressBar = new ProgressBar($progressOutput, count($files));
+        $progressSection = $this->createSectionOutput($output);
+        $progressBar = new ProgressBar($progressSection, count($files));
         $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%');
         $progressBar->start();
 
@@ -181,11 +158,7 @@ final class AnalyzeCommand extends Command
         $batchResult = $batchAnalyzer->analyze($files);
 
         $progressBar->finish();
-        if ($progressSection instanceof ConsoleSectionOutput) {
-            $progressSection->clear();
-        } else {
-            $output->writeln("\n");
-        }
+        $this->clearSection($progressSection, $output);
         $results = $batchResult->getTemplateResults();
 
         $endTime = microtime(true);
@@ -194,35 +167,22 @@ final class AnalyzeCommand extends Command
         $reporter = $this->createReporter($reportType, $dimension);
         $report = $reporter->generate($results);
 
-        $renderer = $this->createRenderer($output);
+        $dirDepthOpt = (string) ($input->getOption('dir-depth') ?? '1');
+        $dirDepth = 1;
+        if (is_numeric($dirDepthOpt)) {
+            $dirDepth = (int) $dirDepthOpt;
+        } elseif (in_array(strtolower($dirDepthOpt), ['false', 'off', 'no'], true)) {
+            $dirDepth = 0;
+        }
+
+        $renderer = $this->createRenderer($output, $dirDepth);
+        if ('dimension-focused' === $reportType && $dimension) {
+            $renderer->setActiveDimension($dimension);
+        }
         $renderer->setHeaderPrinted(true);
         $renderer->setGlobalResults($results);
-        if ($topSection instanceof ConsoleSectionOutput) {
-            $topSection->clear();
-        }
+        $this->clearSection($topSection, $output);
         $renderedOutput = $renderer->render($report);
-
-        $totalLines = 0;
-        $total = max(1, count($results));
-        $large = $highCx = $deep = 0;
-        foreach ($results as $result) {
-            $lines = (int) ($result->getMetric('lines') ?? 0);
-            $cx = (int) ($result->getMetric('complexity_score') ?? 0);
-            $depth = (int) ($result->getMetric('max_depth') ?? 0);
-            $totalLines += $lines;
-            if ($lines > 200) {
-                ++$large;
-            }
-            if ($cx > 20) {
-                ++$highCx;
-            }
-            if ($depth > 5) {
-                ++$deep;
-            }
-        }
-        $penalty = ($highCx / $total) * 40.0 + ($deep / $total) * 25.0 + ($large / $total) * 20.0;
-        $score = max(0.0, 100.0 - $penalty);
-        $grade = $score >= 95 ? 'A+' : ($score >= 85 ? 'A' : ($score >= 75 ? 'B' : ($score >= 65 ? 'C+' : 'C')));
 
         $leftPad = '  ';
         $rightPad = '  ';
@@ -232,7 +192,8 @@ final class AnalyzeCommand extends Command
         $sep = $leftPad.str_repeat('─', $faceWidth).$rightPad;
         $output->writeln('<fg=gray>'.$sep.'</>');
 
-        $footerText = sprintf('Twig Metrics • %d files • %.2f sec • Grade %s', count($results), $totalTime, $grade);
+        $peakMemMb = memory_get_peak_usage(true) / (1024 * 1024);
+        $footerText = sprintf('Twig Metrics • %d files • %.2f sec • %.1f MB', count($results), $totalTime, $peakMemMb);
         $len = mb_strlen($footerText);
         $left = (int) floor(max(0, ($faceWidth - $len) / 2));
         $right = max(0, $faceWidth - $left - $len);
@@ -260,13 +221,37 @@ final class AnalyzeCommand extends Command
             'code-style' => new CodeStyleReporter(),
             'architecture' => new ArchitectureReporter(),
             'maintainability' => new MaintainabilityReporter(),
-            default => throw new \InvalidArgumentException(sprintf(ErrorMessages::INVALID_DIMENSION_REPORTER, $dimension)),
+            default => throw new \InvalidArgumentException(sprintf('Invalid dimension: %s', $dimension)),
         };
     }
 
-    private function createRenderer(OutputInterface $output): ConsoleRenderer
+    private function createRenderer(OutputInterface $output, int $dirDepth): ConsoleRenderer
     {
-        return new ConsoleRenderer($output);
+        return new ConsoleRenderer($output, $dirDepth);
+    }
+
+    /**
+     * Create a console section if supported, otherwise return the original output.
+     */
+    private function createSectionOutput(OutputInterface $output): OutputInterface
+    {
+        if ($output instanceof ConsoleOutputInterface) {
+            return $output->section();
+        }
+
+        return $output;
+    }
+
+    /**
+     * Clear a section if possible, otherwise add a newline to keep spacing readable.
+     */
+    private function clearSection(OutputInterface $section, OutputInterface $fallbackOutput): void
+    {
+        if ($section instanceof ConsoleSectionOutput) {
+            $section->clear();
+        } else {
+            $fallbackOutput->writeln("\n");
+        }
     }
 
     /**
@@ -274,15 +259,37 @@ final class AnalyzeCommand extends Command
      */
     private function parseArguments(string $target, ?string $pathArg): array
     {
-        $validDimensions = [
-            'template-files', 'complexity', /* 'relationships', */ 'callables',
-            'code-style', 'architecture', 'maintainability',
-        ];
-
-        if (in_array($target, $validDimensions)) {
-            return [$pathArg ?? '.', 'dimension-focused', $target];
+        $norm = $this->normalizeDimensionSlug($target);
+        if (null !== $norm) {
+            return [$pathArg ?? '.', 'dimension-focused', $norm];
         }
 
         return [$target, 'default', null];
+    }
+
+    private function normalizeDimensionSlug(?string $slug): ?string
+    {
+        if (null === $slug) {
+            return null;
+        }
+
+        $s = strtolower($slug);
+
+        $canonical = [
+            'template-files' => ['template-files', 'templates', 'files', 'tpl', 'tfiles'],
+            'code-style' => ['code-style', 'codestyle', 'cs', 'style'],
+            'complexity' => ['complexity', 'comp', 'complex', 'logic'],
+            'callables' => ['callables', 'call', 'function', 'functions', 'filter', 'filters', 'callable'],
+            'architecture' => ['architecture', 'archi', 'arch'],
+            'maintainability' => ['maintainability', 'dept', 'maintain', 'maintenance'],
+        ];
+
+        foreach ($canonical as $canon => $aliases) {
+            if (in_array($s, $aliases, true)) {
+                return $canon;
+            }
+        }
+
+        return null;
     }
 }
