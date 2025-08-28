@@ -116,11 +116,32 @@ final class QualityReporter implements ReporterInterface
     private function createVisualDimensionRecap(array $results): ReportSection
     {
         $dimensionScores = [];
-        foreach ($this->dimensionReporters as $reporter) {
-            $score = $reporter->calculateDimensionScore($results);
-            $data = ['score' => (int) round($score)];
 
-            $name = $reporter->getDimensionName();
+        $dimensionMapping = [
+            'Template Files' => 'template-files',
+            'Code Style' => 'code-style',
+            'Twig Callables' => 'callables',
+            'Architecture' => 'architecture',
+            'Logical Complexity' => 'complexity',
+            'Maintainability' => 'maintainability',
+        ];
+
+        $factory = new \TwigMetrics\Renderer\Dimension\DimensionRendererFactory();
+
+        foreach ($this->dimensionReporters as $reporter) {
+            $reporterName = $reporter->getDimensionName();
+            $dimensionSlug = $dimensionMapping[$reporterName] ?? null;
+
+            if ($dimensionSlug) {
+                $presenter = $factory->createPresenter($dimensionSlug);
+                $presentedData = $presenter->present($results, 2, true);
+                $actualScore = (float) ($presentedData['final']['score'] ?? 100);
+            } else {
+                $actualScore = $reporter->calculateDimensionScore($results);
+            }
+
+            $data = ['score' => (int) round($actualScore)];
+            $name = $reporterName;
             if ('Logical Complexity' === $name) {
                 $complexities = [];
                 $depthMax = 0;
@@ -156,10 +177,25 @@ final class QualityReporter implements ReporterInterface
             $dimensionScores[$reporter->getDimensionName()] = $data;
         }
 
+        $overallScore = $this->calculateOverallHealthScore($results);
+        $overallGrade = match (true) {
+            $overallScore >= 90 => 'A',
+            $overallScore >= 80 => 'B',
+            $overallScore >= 70 => 'C',
+            $overallScore >= 60 => 'D',
+            default => 'E',
+        };
+
         return new ReportSection(
             'Twig Metrics',
             'dimension_visual_recap',
-            ['dimensions' => $dimensionScores]
+            [
+                'dimensions' => $dimensionScores,
+                'overall' => [
+                    'score' => (int) round($overallScore),
+                    'grade' => $overallGrade,
+                ],
+            ]
         );
     }
 

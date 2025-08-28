@@ -29,7 +29,7 @@ endef
 GIT_VERSION  := $(shell git describe --tags --abbrev=0 2>/dev/null || echo "dev-main")
 PHP_VERSION  := $(shell php -r 'echo PHP_VERSION;' 2>/dev/null || echo "n/a")
 PROJECT_NAME := TWIG METRICS
-REPO_URL     := https://github.com/smnandre/twig-metrics
+REPO_URL     := https://github.com/smnandre/twigmetrics
 
 about:
 	@echo "┌───────────────────────────── 🌿  ────────────────────────────────┐"; \

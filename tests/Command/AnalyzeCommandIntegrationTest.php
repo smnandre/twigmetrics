@@ -155,7 +155,7 @@ class AnalyzeCommandIntegrationTest extends TestCase
         $output = $this->commandTester->getDisplay();
 
         $this->assertStringContainsString('Dimension: complexity', $output);
-        $this->assertStringContainsString('Logical Complexity', $output);
+        $this->assertStringContainsString('LOGICAL COMPLEXITY', $output);
     }
 
     public function testCallablesDimensionWithMacrosAndFilters(): void
@@ -169,7 +169,7 @@ class AnalyzeCommandIntegrationTest extends TestCase
         $output = $this->commandTester->getDisplay();
 
         $this->assertStringContainsString('Dimension: callables', $output);
-        $this->assertStringContainsString('Twig Callables', $output);
+        $this->assertStringContainsString('TWIG CALLABLES', $output);
     }
 
     public function testArchitectureDimensionWithLayeredStructure(): void
@@ -183,7 +183,7 @@ class AnalyzeCommandIntegrationTest extends TestCase
         $output = $this->commandTester->getDisplay();
 
         $this->assertStringContainsString('Dimension: architecture', $output);
-        $this->assertStringContainsString('Architecture', $output);
+        $this->assertStringContainsString('ARCHITECTURE', $output);
     }
 
     public function testArgumentParsingComplexCases(): void
