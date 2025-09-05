@@ -125,11 +125,6 @@ jobs:
       - name: "PHPUnit: all tests with coverage"
         run: vendor/bin/phpunit --coverage-clover=coverage.xml
 
-#      - name: "Codecov: upload coverage"
-#        uses: codecov/codecov-action@v5
-#        if: matrix.php-version == '8.4' && matrix.dependencies == 'high'
-#        with:
-#          files: ./coverage.xml
-#          flags: unittests
-#          name: codecov-umbrella
-#          fail_ci_if_error: false
+      - name: "Codecov: upload coverage"
+        uses: codecov/codecov-action@v5
+        if: matrix.php-version == '8.4' && matrix.dependencies == 'high'
